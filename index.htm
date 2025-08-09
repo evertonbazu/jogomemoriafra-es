@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Jogo da Memória das Frações Fantásticas! 🎯</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        /* Estilos para as telas */
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Estilos da Tela Inicial */
+        .start-screen {
+             background-image: 
+                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='rgba(255,255,255,0.2)' stroke-width='2'/%3E%3Cpath d='M 50 50 L 50 10 A 40 40 0 0 1 90 50 Z' fill='rgba(255,255,255,0.15)'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg width='120' height='40' viewBox='0 0 120 40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='1' y='1' width='118' height='38' rx='5' fill='none' stroke='rgba(255,255,255,0.2)' stroke-width='2'/%3E%3Crect x='1' y='1' width='59' height='38' fill='rgba(255,255,255,0.15)'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Comic Sans MS, cursive' font-size='30' fill='rgba(255,255,255,0.1)' font-weight='bold'%3E3/4%3C/text%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: top 5% left 5%, bottom 10% right 5%, top 20% right 10%;
+            background-size: 120px, 150px, 90px;
+        }
+
+        .start-screen h1, .final-screen h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .start-screen p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            text-align: center; /* Centralizado */
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            color: #333;
+            text-align: center;
+        }
+        
+        .form-group select {
+            text-align-last: center; /* Para centralizar o texto no select */
+        }
+
+        /* Estilos do Jogo */
+        #gameScreen h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .info-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .info-card p {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            max-width: 1100px;
+            margin: 0 auto 30px;
+            padding: 10px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s ease, opacity 0.4s ease, transform 0.4s ease;
+            border: 3px solid #fff;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+            font-size: 3rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #4ecdc4, #44a08d);
+            transform: rotateY(180deg);
+            padding: 10px;
+            flex-direction: column;
+            font-weight: bold;
+        }
+
+        .card.matched {
+            background: linear-gradient(145deg, #a8e6cf, #88d8a3);
+            animation: celebration 0.6s ease;
+        }
+        
+        .card.matched .card-front {
+             background: linear-gradient(145deg, #a8e6cf, #88d8a3);
+        }
+
+        @keyframes celebration {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1); }
+        }
+
+        .fraction-text {
+            font-size: clamp(1.1rem, 5vw, 1.5rem);
+            margin-bottom: 5px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #ffeaa7, #fdcb6e);
+            color: #2d3436;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            min-height: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            transition: color 0.3s;
+        }
+        
+        /* Estilos da Tela Final */
+        .final-screen .results {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        .final-screen .results span {
+            font-weight: bold;
+            color: #ffeaa7;
+        }
+        .final-screen .timestamp {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .game-board { grid-template-columns: repeat(5, 1fr); }
+        }
+        @media (max-width: 768px) {
+            #gameScreen h1 { font-size: 2rem; }
+            .game-board { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        }
+        @media (max-width: 480px) {
+            .game-board { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .info-card { padding: 10px 15px; }
+            .btn { padding: 12px 25px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- TELA INICIAL -->
+        <div id="startScreen" class="screen start-screen">
+            <h1>Bem-vindo(a) ao Jogo das Frações!</h1>
+            <p>Preencha seus dados para começar a jogar.</p>
+            <div class="form-group">
+                <label for="studentName">Seu Nome:</label>
+                <input type="text" id="studentName" placeholder="Digite seu nome completo">
+            </div>
+            <div class="form-group">
+                <label for="studentClass">Sua Turma:</label>
+                <select id="studentClass">
+                    <option value="5º Ano A">5º Ano A</option>
+                    <option value="5º Ano B">5º Ano B</option>
+                </select>
+            </div>
+            <button class="btn" onclick="initializeGame()">▶️ Começar a Jogar!</button>
+        </div>
+
+        <!-- TELA DO JOGO -->
+        <div id="gameScreen" class="hidden">
+            <h1>🧠 Jogo da Memória das Frações Fantásticas! 🎯</h1>
+            <p class="subtitle">Encontre os pares: fração numérica e por extenso!</p>
+            <div class="game-info">
+                <div class="info-card">
+                    <h3>⏱️ Tempo</h3>
+                    <p id="timer">0:00</p>
+                </div>
+                <div class="info-card">
+                    <h3>🎯 Tentativas</h3>
+                    <p id="attempts">0</p>
+                </div>
+                <div class="info-card">
+                    <h3>⭐ Pares</h3>
+                    <p id="pairs">0/15</p>
+                </div>
+            </div>
+            <div class="game-board" id="gameBoard"></div>
+            <div class="message" id="message">Clique nas cartas para encontrar os pares! 🚀</div>
+        </div>
+
+        <!-- TELA FINAL -->
+        <div id="finalScreen" class="screen final-screen hidden">
+            <h1>🎊 PARABÉNS! VOCÊ VENCEU! 🎊</h1>
+            <p id="finalMessage">Você é um gênio das frações! 🏆</p>
+            <div class="results">
+                <p>Nome: <span id="finalName"></span></p>
+                <p>Turma: <span id="finalClass"></span></p>
+                <p>Tempo Final: <span id="finalTime"></span></p>
+                <p>Tentativas: <span id="finalAttempts"></span></p>
+            </div>
+            <p class="timestamp">Concluído em: <span id="finalTimestamp"></span></p>
+            <button class="btn" onclick="restartGame()">🎮 Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        // --- URL DO SCRIPT DO GOOGLE SHEETS ---
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMOj2hLl22jk77jpruyzhaJggxcDvwe66TCBje61VKeSfXgm_D0YaQp3kOJaFr8vPo5A/exec';
+
+        // --- DADOS DO JOGO ---
+        const fractionData = [
+            { fraction: "1/2", description: "um meio" }, { fraction: "1/4", description: "um quarto" },
+            { fraction: "3/4", description: "três quartos" }, { fraction: "1/3", description: "um terço" },
+            { fraction: "2/3", description: "dois terços" }, { fraction: "1/5", description: "um quinto" },
+            { fraction: "2/5", description: "dois quintos" }, { fraction: "3/5", description: "três quintos" },
+            { fraction: "4/5", description: "quatro quintos" }, { fraction: "1/6", description: "um sexto" },
+            { fraction: "5/6", description: "cinco sextos" }, { fraction: "1/8", description: "um oitavo" },
+            { fraction: "3/8", description: "três oitavos" }, { fraction: "1/10", description: "um décimo" },
+            { fraction: "7/10", description: "sete décimos" }
+        ];
+
+        // --- VARIÁVEIS DE ESTADO ---
+        let studentName = '';
+        let studentClass = '';
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let attempts = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let gameActive = false;
+        let isChecking = false;
+
+        // --- ELEMENTOS DO DOM ---
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const finalScreen = document.getElementById('finalScreen');
+        const gameBoard = document.getElementById('gameBoard');
+        const timerEl = document.getElementById('timer');
+        const attemptsEl = document.getElementById('attempts');
+        const pairsEl = document.getElementById('pairs');
+        const messageEl = document.getElementById('message');
+
+        // --- LÓGICA DE TRANSIÇÃO DE TELAS ---
+        function initializeGame() {
+            studentName = document.getElementById('studentName').value;
+            studentClass = document.getElementById('studentClass').value;
+
+            if (!studentName) {
+                alert('Por favor, digite seu nome para começar!');
+                return;
+            }
+
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            startNewGame();
+        }
+
+        function restartGame() {
+            finalScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+        // --- FUNÇÕES PRINCIPAIS DO JOGO ---
+        function startNewGame() {
+            gameActive = true;
+            isChecking = false;
+            matchedPairs = 0;
+            attempts = 0;
+            flippedCards = [];
+            startTime = Date.now();
+            
+            pairsEl.textContent = `0/${fractionData.length}`;
+            attemptsEl.textContent = '0';
+            messageEl.textContent = 'Encontre os pares: número + extenso! 🚀';
+            
+            createCards();
+            renderBoard();
+            startTimer();
+        }
+
+        function createCards() {
+            cards = [];
+            fractionData.forEach((data, index) => {
+                cards.push({ id: `f-${index}`, type: 'fraction', content: data.fraction, group: index, matched: false });
+                cards.push({ id: `d-${index}`, type: 'description', content: data.description, group: index, matched: false });
+            });
+            cards.sort(() => Math.random() - 0.5);
+        }
+
+        function renderBoard() {
+            gameBoard.innerHTML = '';
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.dataset.index = index;
+                cardElement.onclick = () => flipCard(index);
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-back">🎲</div>
+                        <div class="card-face card-front">
+                            <div class="fraction-text" style="font-size: ${card.type === 'fraction' ? '1.8rem' : '1.3rem'};">
+                                ${card.content}
+                            </div>
+                        </div>
+                    </div>`;
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        function flipCard(index) {
+            if (!gameActive || isChecking || cards[index].matched || flippedCards.includes(index)) return;
+            
+            const cardElement = document.querySelector(`[data-index="${index}"]`);
+            cardElement.classList.add('flipped');
+            flippedCards.push(index);
+            
+            if (flippedCards.length === 2) {
+                isChecking = true;
+                attempts++;
+                attemptsEl.textContent = attempts;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [index1, index2] = flippedCards;
+            const card1 = cards[index1];
+            const card2 = cards[index2];
+            
+            if (card1.group === card2.group) {
+                handleMatch(index1, index2);
+            } else {
+                handleMismatch(index1, index2);
+            }
+        }
+
+        function handleMatch(index1, index2) {
+            cards[index1].matched = true;
+            cards[index2].matched = true;
+            
+            const cardElements = flippedCards.map(i => document.querySelector(`[data-index="${i}"]`));
+            cardElements.forEach(el => el.classList.add('matched'));
+            
+            matchedPairs++;
+            pairsEl.textContent = `${matchedPairs}/${fractionData.length}`;
+            
+            const fractionInfo = fractionData[cards[index1].group];
+            messageEl.innerHTML = `<span style="color: #00ff88;">🎉 Perfeito! Você encontrou ${fractionInfo.description}! 🎉</span>`;
+            
+            setTimeout(() => {
+                cardElements.forEach(el => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'scale(0)';
+                });
+                flippedCards = [];
+                isChecking = false;
+                if (matchedPairs === fractionData.length) {
+                    setTimeout(endGame, 800);
+                }
+            }, 1000);
+        }
+
+        function handleMismatch(index1, index2) {
+            messageEl.textContent = "Ops! Essas não formam um par. Tente novamente! 🤔";
+            setTimeout(() => {
+                const cardElements = flippedCards.map(i => document.querySelector(`[data-index="${i}"]`));
+                cardElements.forEach(el => el.classList.remove('flipped'));
+                flippedCards = [];
+                isChecking = false;
+            }, 1200);
+        }
+        
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            const finalTime = timerEl.textContent;
+            const finalAttempts = attempts;
+            const completionDate = new Date();
+            const formattedTimestamp = completionDate.toLocaleString('pt-BR');
+
+            let performanceMessage = '';
+            if (finalAttempts <= 20) performanceMessage = 'INCRÍVEL! Você é um gênio das frações! 🏆';
+            else if (finalAttempts <= 28) performanceMessage = 'EXCELENTE! Você mandou muito bem! 🌟';
+            else if (finalAttempts <= 36) performanceMessage = 'MUITO BOM! Continue praticando! 👏';
+            else performanceMessage = 'BOA! As frações estão ficando mais fáceis! 💪';
+            
+            // Preenche a tela final
+            document.getElementById('finalMessage').textContent = performanceMessage;
+            document.getElementById('finalName').textContent = studentName;
+            document.getElementById('finalClass').textContent = studentClass;
+            document.getElementById('finalTime').textContent = finalTime;
+            document.getElementById('finalAttempts').textContent = finalAttempts;
+            document.getElementById('finalTimestamp').textContent = formattedTimestamp;
+
+            // Mostra a tela final
+            gameScreen.classList.add('hidden');
+            finalScreen.classList.remove('hidden');
+
+            // Envia os dados para a planilha
+            sendDataToSheet(formattedTimestamp, studentName, studentClass, finalAttempts, finalTime);
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // --- FUNÇÃO DE ENVIO PARA O GOOGLE SHEETS ---
+        function sendDataToSheet(date, name, studentClass, attempts, time) {
+            const formData = new FormData();
+            formData.append('data', date);
+            formData.append('nome', name);
+            formData.append('turma', studentClass);
+            formData.append('tentativas', attempts);
+            formData.append('tempo', time);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.result === 'success') {
+                    console.log('Dados enviados com sucesso para a planilha!');
+                } else {
+                    throw new Error(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar dados:', error);
+                // Opcional: informar ao usuário que houve um erro
+                // alert('Houve um erro ao salvar sua pontuação. Por favor, tente novamente.');
+            });
+        }
+    </script>
+</body>
+</html>
